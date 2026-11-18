@@ -101,6 +101,26 @@ Suggested report line (adapt the numbers, keep the shape):
 AgentGuard: CAUTION — consensus score 60 · 1 verdict (0 SAFE / 1 CAUTION / 0 DANGER)
 ```
 
+## Automatic mode (for operators)
+
+The check above is **manual mode**: the agent runs it and applies the
+decision rules itself. It depends on the agent remembering, every time.
+
+Operators who want the check to be structural rather than remembered can
+install the **guard wrapper** (`guard/agentguard_guard.py` in the
+AgentGuard repo, next to this skill): the operator points the agent's
+wallet-call command at the wrapper once, and from then on every
+`baw contract-call preview` is checked against the registry *before* it
+reaches the wallet CLI — the agent decides nothing and cannot skip it.
+The wrapper reads the `--to` target, applies this skill's exact policy
+(DANGER → not forwarded, exit 3; CAUTION → forwarded with a loud
+warning; SAFE / UNRATED → forwarded; registry unreachable → forwarded
+with a warning), and otherwise execs the real `baw` with the operator's
+arguments unchanged. It holds no keys and signs nothing; the only
+override is the operator deliberately calling `baw` directly. Operators
+can smoke-test an install with
+`agentguard_guard.py --guard-check-only <address>`.
+
 ## Honesty rules
 
 - A verdict is an **attestation** by an independent Agent ID holder, not a
