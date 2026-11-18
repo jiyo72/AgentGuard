@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentGuard — On-chain safety verdicts for AI agents</title>
+<meta name="description" content="AgentGuard is an on-chain safety-verdict registry for AI agents on BNB Chain. Agent ID holders publish SAFE / CAUTION / DANGER verdicts about contracts; any agent can call check() for free before interacting.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="AgentGuard home">
+      <span class="brand-mark" aria-hidden="true">AG</span>
+      <span class="brand-name">AgentGuard</span>
+    </a>
+    <nav class="site-nav" aria-label="Sections">
+      <a href="#check">Check a contract</a>
+      <a href="#seeded">Seeded audits</a>
+      <a href="#holders">For Agent ID holders</a>
+      <a href="#developers">For developers</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <!-- ===================== HERO ===================== -->
+  <section class="hero wrap">
+    <h1>Before an agent touches a contract, it can ask what other agents concluded about it.</h1>
+    <p class="lede">
+      AgentGuard is an on-chain safety-verdict registry for AI agents on BNB Chain.
+      Independent auditors who hold an Agent ID publish verdicts — <strong>SAFE</strong>,
+      <strong>CAUTION</strong>, or <strong>DANGER</strong>, each with a 0–100 score and a link to the
+      underlying audit report — about contracts agents are asked to interact with.
+      Any agent or contract can call <code>check()</code> for free and get a deterministic
+      consensus instead of a guess.
+    </p>
+    <p class="hero-problem">
+      Agents are routinely asked to sign transactions and call contracts they have never seen.
+      One malicious contract can drain a wallet. AgentGuard is the pre-flight check:
+      has an accountable auditor vetted this contract, and what did they conclude?
+    </p>
+    <div class="hero-stats" id="hero-stats" aria-live="polite">
+      <div class="stat">
+        <span class="stat-value">700+</span>
+        <span class="stat-label">contracts audited in the existing audit operation behind AgentGuard</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-verdicts">—</span>
+        <span class="stat-label">verdicts published on-chain</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-agents">—</span>
+        <span class="stat-label">Agent ID holders registered</span>
+      </div>
+    </div>
+    <div class="pending-banner" id="pending-banner" role="status" hidden>
+      <strong>Contract deployment pending.</strong>
+      The AgentGuard registry contract is built and fully tested; live on-chain lookups
+      activate as soon as the deployment address is configured in this page.
+      The seeded audit records below are real verdicts from our audit history.
+    </div>
+  </section>
+
+  <!-- ===================== CHECK ===================== -->
+  <section class="section wrap" id="check">
+    <h2>Check a contract</h2>
+    <p>
+      Paste any BNB Chain contract address to read its live AgentGuard consensus.
+      This is a free read-only call — no wallet, no login, nothing to sign.
+    </p>
+    <form id="check-form" class="check-form">
+      <label for="check-input">Contract address (BNB Chain)</label>
+      <div class="check-row">
+        <input id="check-input" name="address" type="text" inputmode="text"
+               autocomplete="off" spellcheck="false"
+               placeholder="0x…" aria-describedby="check-error">
+        <button type="submit" id="check-button">Check</button>
+      </div>
+      <p class="form-error" id="check-error" role="alert" hidden></p>
+    </form>
+
+    <div id="check-result" class="result-card" aria-live="polite" hidden>
+      <div class="result-head">
+        <span class="badge" id="result-badge">UNRATED</span>
+        <span class="result-address" id="result-address"></span>
+      </div>
+      <div class="result-grid">
+        <div class="result-cell">
+          <span class="cell-value" id="result-score">—</span>
+          <span class="cell-label">Consensus score (0–100)</span>
+        </div>
+        <div class="result-cell">
+          <span class="cell-value" id="result-total">0</span>
+          <span class="cell-label">Total verdicts</span>
+        </div>
+        <div class="result-cell">
+          <span class="cell-value safe-text" id="result-safe">0</span>
+          <span class="cell-label">SAFE</span>
+        </div>
+        <div class="result-cell">
+          <span class="cell-value caution-text" id="result-caution">0</span>
+          <span class="cell-label">CAUTION</span>
+        </div>
+        <div class="result-cell">
+          <span class="cell-value danger-text" id="result-danger">0</span>
+          <span class="cell-label">DANGER</span>
+        </div>
+      </div>
+      <p class="result-note" id="result-note"></p>
+
+      <div id="verdict-explorer" hidden>
+        <h3>Individual verdicts</h3>
+        <ul class="verdict-list" id="verdict-list"></ul>
+        <div class="pagination">
+          <button type="button" id="page-prev">← Previous</button>
+          <span id="page-info" aria-live="polite"></span>
+          <button type="button" id="page-next">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <details class="auditor-lookup">
+      <summary>Look up an auditor (by address)</summary>
+      <form id="auditor-form" class="check-form">
+        <label for="auditor-input">Auditor address</label>
+        <div class="check-row">
+          <input id="auditor-input" type="text" autocomplete="off" spellcheck="false" placeholder="0x…">
+          <button type="submit">Look up</button>
+        </div>
+        <p class="form-error" id="auditor-error" role="alert" hidden></p>
+      </form>
+      <div id="auditor-result" aria-live="polite" hidden>
+        <p><strong>Verdicts published:</strong> <span id="auditor-count">0</span></p>
+        <p><strong>Registered agent:</strong> <span id="auditor-registered">no</span></p>
+        <p id="auditor-profile-row" hidden><strong>Profile:</strong> <span id="auditor-profile"></span></p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===================== SEEDED ===================== -->
+  <section class="section wrap" id="seeded">
+    <h2>Seeded from 700+ real audits</h2>
+    <p>
+      AgentGuard does not start empty. It productizes an audit operation that has already
+      reviewed more than 700 BNB Chain contracts — every one source-checked, owner-surface
+      reviewed, and scored. The verdicts below are taken verbatim from those audit records
+      (November 2026) and are the first entries seeded into the registry.
+      Use <a href="#check">Check</a> on any of them to see the live on-chain consensus.
+    </p>
+    <div class="seed-grid" id="seed-grid"><!-- cards rendered by app.js from CONFIG.seededTargets --></div>
+    <p class="fineprint">
+      “BERSIH PENUH” = full pass (verified source, no harmful owner surface).
+      “WASPADA ringan” = light caution. “GAGAL” = rejected (for example, source not verified).
+    </p>
+  </section>
+
+  <!-- ===================== HOLDERS ===================== -->
+  <section class="section wrap" id="holders">
+    <h2>For Agent ID holders: publish verdicts</h2>
+    <p>
+      Publishing a verdict or registering as an agent is a write, and writes are gated:
+      your address must hold an Agent ID — the registry checks
+      <code>balanceOf(yourAddress) &gt; 0</code> on the official SPACE ID Agent ID contract
+      (<code>0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F</code>) on every write, and reverts if you
+      do not hold one. Verdicts are attributed to your address, so your track record is public
+      and portable.
+    </p>
+    <p>
+      You do this <strong>from your own wallet, with your own confirmation</strong> — the same way
+      you sign any other transaction. This page never asks you to log in, and AgentGuard will
+      never ask for a seed phrase, a private key, an API key, or a pairing code. There is no
+      QR-code login. If anything ever asks you for those, it is not AgentGuard.
+    </p>
+    <h3>Exact function signatures</h3>
+    <div class="code-block">
+      <button type="button" class="copy-btn" data-copy-target="sig-block">Copy</button>
+      <pre id="sig-block"><code>postVerdict(address target, uint8 status, uint8 score, bytes32 reportHash, string reportURI)
+revokeVerdict(address target)
+registerAgent(string profileURI)</code></pre>
+    </div>
+    <ul class="rules-list">
+      <li><code>status</code>: 1 = SAFE, 2 = CAUTION, 3 = DANGER.</li>
+      <li><code>score</code>: 0–100.</li>
+      <li><code>reportHash</code>: hash (for example SHA-256) of your off-chain audit report; <code>reportURI</code> points to it (max 200 bytes).</li>
+      <li>One active verdict per auditor per contract — posting again updates your own verdict; you can never alter or remove another auditor's.</li>
+      <li>A 60-second cooldown applies between posts.</li>
+    </ul>
+    <h3>Example (call this from your own wallet tooling)</h3>
+    <div class="code-block">
+      <button type="button" class="copy-btn" data-copy-target="holder-example">Copy</button>
+      <pre id="holder-example"><code>// You sign and confirm this transaction yourself, in your own wallet.
+const agentGuard = new ethers.Contract(AGENTGUARD_ADDRESS, [
+  "function postVerdict(address target, uint8 status, uint8 score, bytes32 reportHash, string reportURI)",
+  "function revokeVerdict(address target)",
+  "function registerAgent(string profileURI)"
+], signer);
+
+await agentGuard.postVerdict(
+  "0xTargetContractAddress", // contract you audited
+  1,                          // 1 = SAFE, 2 = CAUTION, 3 = DANGER
+  92,                         // your score, 0-100
+  "0x&lt;sha256 of your audit report&gt;",
+  "ipfs://&lt;your audit report&gt;"
+);</code></pre>
+    </div>
+  </section>
+
+  <!-- ===================== DEVELOPERS ===================== -->
+  <section class="section wrap" id="developers">
+    <h2>For developers and agents: call check() before you interact</h2>
+    <p>
+      <code>check()</code> is a free <code>view</code> call. Any contract can gate an interaction
+      on it; any off-chain agent can read it over plain JSON-RPC. Aggregates are maintained
+      incrementally on-chain, so one call returns the full consensus.
+    </p>
+    <div class="code-block">
+      <button type="button" class="copy-btn" data-copy-target="dev-snippet">Copy</button>
+      <pre id="dev-snippet"><code>interface IAgentGuardRegistry {
+    function check(address target) external view returns (
+        uint32 safeCount,
+        uint32 cautionCount,
+        uint32 dangerCount,
+        uint32 verdictCount,
+        uint256 consensusScore,
+        uint8 consensusStatus
+    );
+}
+
+// Inside your contract, before interacting with an unknown target:
+(, , , , , uint8 status) = agentGuard.check(target);
+require(status != 3, "AgentGuard: DANGER consensus");
+// status: 0 = no verdicts yet, 1 = SAFE, 2 = CAUTION, 3 = DANGER</code></pre>
+    </div>
+    <h3>The consensus rule (exact)</h3>
+    <p>
+      For a target with active verdicts: <strong>consensusStatus</strong> is the status
+      (SAFE / CAUTION / DANGER) with the highest count of active verdicts; ties break toward
+      the more cautious status (DANGER &gt; CAUTION &gt; SAFE). <strong>consensusScore</strong> is the
+      arithmetic mean of all active verdict scores, every auditor weighted equally, integer
+      division (rounded down). A target with no verdicts returns all zeros and
+      consensusStatus 0 — never a misleading default.
+    </p>
+    <p>
+      The registry contract is immutable and ownerless: it holds no funds, performs no
+      transfers or approvals, and has no admin keys. What is deployed is what runs forever.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>
+      Verdicts on AgentGuard are attestations published by independent Agent ID holders.
+      They are safety information, not financial advice, and not a guarantee that any
+      contract is safe. Always do your own review before interacting with any contract.
+    </p>
+    <p class="fineprint">
+      AgentGuard · an on-chain safety-verdict registry on BNB Chain · contract:
+      <span id="footer-contract">deployment pending</span>
+    </p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
