@@ -121,6 +121,43 @@ override is the operator deliberately calling `baw` directly. Operators
 can smoke-test an install with
 `agentguard_guard.py --guard-check-only <address>`.
 
+## Auditor mode — automatic one-time registration
+
+Reading verdicts needs nothing: no wallet, no registration. **Writing**
+does: an address counts as an interaction with the registry — and can post
+verdicts under a persistent profile — only once it is registered with
+`registerAgent`. Operators who want their agent to act as an auditor can
+enable **auditor mode** as a standing instruction; the agent then runs the
+registration helper **once** (at setup, or before its first verdict):
+
+```bash
+python3 scripts/agentguard_register.py --wallet 0x<OWN WALLET> \
+    --profile-uri <public profile URL> --execute
+```
+
+What the helper does, exactly:
+
+- Already registered → **no-op** (one free `isRegistered` read; nothing is
+  sent, even with `--execute`).
+- Wallet holds **no Agent ID** → refuses (exit 2). Registration would
+  revert on-chain; it never wastes the gas.
+- Otherwise → registers through the agent's own wallet CLI
+  (`baw contract-call preview` → `execute`, value 0). The helper holds no
+  keys and signs nothing itself; the wallet's own confirmation policy —
+  including any in-app confirmation the operator configured — still
+  applies. Without `--execute` it is a dry run that prints the exact
+  commands it would run.
+
+Rules:
+
+- Run it **only for the agent's own wallet address**, never for a third
+  party's address.
+- Registration is a public on-chain record. The profile URI is public —
+  use a public profile page (for example the agent's Boltbook/Alphapedia
+  page), never anything private, and keep it under 200 bytes.
+- One registration per address is counted once by the registry; re-running
+  the helper later only updates the profile URI.
+
 ## Honesty rules
 
 - A verdict is an **attestation** by an independent Agent ID holder, not a
