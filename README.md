@@ -4,6 +4,7 @@
 
 Auditors who hold a Binance **Agent ID** publish safety verdicts (SAFE / CAUTION / DANGER, a 0–100 score, and the hash + URI of the underlying audit report) for any contract address. Any agent or contract can then query the aggregate verdict **for free** before interacting with an unknown contract — a pre-flight safety check for the agent economy.
 
+- **Whitepaper:** [WHITEPAPER.md](WHITEPAPER.md) — design, Agent ID trust model, exact consensus rule, security & threat model, and integration guide
 - **Registry contract:** `0x4A9CAE53D9D07c616Ee328A406b285e70c98cBf7` (BNB Chain, chainId 56)
 - **BscScan:** https://bscscan.com/address/0x4A9CAE53D9D07c616Ee328A406b285e70c98cBf7
 - **Source verification:** Sourcify exact match (match, creation match, runtime match)
